@@ -1,39 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Owner, Loading, BackButton, IssuesList } from './styles';
 import { FaArrowLeft } from 'react-icons/fa';
+
+import { Container, Owner, Loading, BackButton, IssuesList, PageActions } from './styles';
 import api from '../../services/api';
 
 export default function Repositorio() {
-  const { repositorio } = useParams();
-  const [reposit, setReposit] = useState({});
+  const { repositorio: repoParam } = useParams();
+
+  const [repository, setRepository] = useState({});
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
+  // Carrega os dados do repositório
   useEffect(() => {
-    async function load() {
+    async function loadRepository() {
       try {
-        const [repositorioData, issuesData] = await Promise.all([
-        api.get(`/repos/${repositorio}`),
-        api.get(`/repos/${repositorio}/issues`, {
-          params: {
-            state: 'open',
-            per_page: 5,
-          },
-        }),
-      ]);
-      setReposit(repositorioData.data);
-      setIssues(issuesData.data);
-
-      }catch(error) {
-        console.error('Erro ao buscar dados do repositorio:', error);
-      }finally {
+        const response = await api.get(`/repos/${repoParam}`);
+        setRepository(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar repositório:', error);
+      } finally {
         setLoading(false);
       }
     }
 
-    load();
-  }, [repositorio]);
+    loadRepository();
+  }, [repoParam]);
+
+  // Carrega issues paginadas
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        const response = await api.get(`/repos/${repoParam}/issues`, {
+          params: {
+            state: 'open',
+            page,
+            per_page: 5,
+          },
+        });
+        setIssues(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar issues:', error);
+      }
+    }
+
+    loadIssues();
+  }, [repoParam, page]);
+
+  function goToPreviousPage() {
+    setPage((prev) => Math.max(prev - 1, 1));
+  }
+
+  function goToNextPage() {
+    setPage((prev) => prev + 1);
+  }
 
   if (loading) {
     return (
@@ -43,38 +65,48 @@ export default function Repositorio() {
     );
   }
 
+  const { owner = {}, name, description } = repository;
+
   return (
     <Container>
       <BackButton to='/'>
-        <FaArrowLeft color='#000' size={30}/>
+        <FaArrowLeft color='#000' size={30} />
       </BackButton>
+
       <Owner>
-        <img src={reposit.owner.avatar_url} alt={reposit.owner?.login} />
-        <h1>{reposit.name}</h1>
-        <p>{reposit.description}</p>
+        <img src={owner.avatar_url} alt={owner.login} />
+        <h1>{name}</h1>
+        <p>{description}</p>
       </Owner>
 
-
       <IssuesList>
-        { issues.map(issue => (
-          <li key={ String(issue.id) }>
-            <img src={ issue.user.avatar_url } alt={ issue.user.login } />
-
+        {issues.map((issue) => (
+          <li key={String(issue.id)}>
+            <img src={issue.user.avatar_url} alt={issue.user.login} />
             <div>
               <strong>
-                <a href={ issue.html_url }>{ issue.title }</a>
-
-                { issue.labels.map(label => (
-                  <span key={String(label.id)}>{ label.name }</span>
-                )) }
-
+                <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
+                  {issue.title}
+                </a>
+                {issue.labels.map((label) => (
+                  <span key={String(label.id)}>{label.name}</span>
+                ))}
               </strong>
-
-              <p>{ issue.user.login }</p>
+              <p>{issue.user.login}</p>
             </div>
           </li>
-        )) }
+        ))}
       </IssuesList>
+
+      <PageActions>
+        <button type="button" onClick={goToPreviousPage} disabled={page === 1}>
+          Voltar
+        </button>
+        <h4>Página {page}</h4>
+        <button type="button" onClick={goToNextPage}>
+          Próxima
+        </button>
+      </PageActions>
     </Container>
   );
 }
