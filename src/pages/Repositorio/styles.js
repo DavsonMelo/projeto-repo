@@ -1,8 +1,8 @@
-import styled from "styled-components";
-import { Link } from "react-router-dom";
+import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
 export const Loading = styled.div`
-  color: #FFF;
+  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +11,7 @@ export const Loading = styled.div`
 
 export const Container = styled.div`
   max-width: 700px;
-  background: #FFF;
+  background: #fff;
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   padding: 30px;
@@ -49,7 +49,7 @@ export const Owner = styled.header`
 export const IssuesList = styled.ul`
   margin-top: 30px;
   padding-top: 30px;
-  border-top: 1px solid #EEE;
+  border-top: 1px solid #eee;
   list-style: none;
   li {
     display: flex;
@@ -85,7 +85,7 @@ export const IssuesList = styled.ul`
     }
     span {
       background: #222;
-      color: #FFF;
+      color: #fff;
       border-radius: 4px;
       font-size: 12px;
       font-weight: 600;
@@ -103,12 +103,26 @@ export const PageActions = styled.div`
     outline: 0;
     border: 0;
     background: #222;
-    color: #FFF;
+    color: #fff;
     padding: 5px 10px;
     border-radius: 4px;
     &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
   }
+`;
+
+export const FilterList = styled.div`
+  margin: 5px 0;
+  button {
+    outline: 0;
+    border: 0;
+    padding: 8px;
+    margin: 0 3px;
+    &:nth-child(${props => props.active + 1}) {
+      background: #0071DB;
+      color: #FFF;
+    }
   }
 `;

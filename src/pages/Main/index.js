@@ -6,20 +6,19 @@ import api from '../../services/api';
 
 // Componente principal
 export default function Main() {
-  // Estado para armazenar o nome do novo repositório a ser adicionado
-  const [newRepo, setNewRepo] = useState('');
-  // Estado para controlar se está carregando (usado no botão)
-  const [loading, setLoading] = useState(false);
-  // Estado para mensagens de erro/alerta
-  const [alert, setAlert] = useState(null);
-  // Estado para lista de repositórios salvos. Usa localStorage como persistência.
+  const [newRepo, setNewRepo] = useState(''); // controla o valor de um input
+  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const [alert, setAlert] = useState(null); // mensagem de alerta
+
+  // É um useState com função como argumento. Isso se chama lazy initialization, e só roda uma vez quando o componente é renderizado.
   const [repositorios, setRepositorios] = useState(() => {
     try {
-      const repoStorage = localStorage.getItem('repos');
+      const repoStorage = localStorage.getItem('repos'); // Pega a string salva na chave 'repos' do localStorage
+      // Tenta converter a string para um objeto JSON, se houver
       return repoStorage ? JSON.parse(repoStorage) : [];
     } catch (e) {
       console.error('Erro ao ler localStorage:', e);
-      return [];
+      return []; // Retorna um array vazio em caso de erro
     }
   });
 
@@ -28,7 +27,7 @@ export default function Main() {
   useEffect(() => {
     try {
       const repoStorage = localStorage.getItem('repos');
-
+      // Tenta ler o localStorage e converte para JSON, se houver
       if (repoStorage) {
         const parsed = JSON.parse(repoStorage);
         if (Array.isArray(parsed)) {
@@ -75,14 +74,12 @@ export default function Main() {
             throw new Error('Repositorio duplicado');
           }
 
-          // Cria objeto com nome do repositório e adiciona à lista
           const data = {
             name: response.data.full_name,
           };
           setRepositorios([...repositorios, data]);
-          setNewRepo(''); // Limpa o input
+          setNewRepo('');
         } catch (error) {
-          // Trata erros comuns e exibe mensagens apropriadas
           if (error.response && error.response.status === 404) {
             setAlert(
               'repositorio nao encontrado. Verifique o nome e tente novamente.'
@@ -94,7 +91,6 @@ export default function Main() {
           }
           console.error('Erro ao adicionar repositorio:', error);
         } finally {
-          // Garante que o loading apareça por pelo menos 500ms
           const elapsed = Date.now() - start;
           const minLoading = 500;
 
@@ -107,22 +103,20 @@ export default function Main() {
       }
       submit();
     },
-    [newRepo, repositorios] // Dependências: muda se um desses dois mudar
+    [newRepo, repositorios] 
   );
 
-  // Atualiza o input com o valor digitado pelo usuário
   function handleinputChange(e) {
     setNewRepo(e.target.value);
-    setAlert(null); // Limpa qualquer alerta antigo
+    setAlert(null); 
   }
 
-  // Função para remover um repositório da lista
   const handleDelete = useCallback(
     (repo) => {
       const find = repositorios.filter((r) => r.name !== repo);
       setRepositorios(find);
     },
-    [repositorios] // Executa novamente caso a lista mude
+    [repositorios]
   );
 
   // JSX retornado pela função (a interface em si)
@@ -166,7 +160,6 @@ export default function Main() {
               </DeleteButton>
               {repo.name}
             </span>
-            {/* Botão de ações futuras (placeholder por enquanto) */}
             <Link to={ `/repositorio/${ encodeURIComponent(repo.name) }` }>
               <FaBars size={20} />
             </Link>
